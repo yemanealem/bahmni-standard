@@ -21,8 +21,14 @@
 
     # always loaded
     'data': [
-        #'security/ir.model.access.csv',
+        'data/claim_sequence.xml', 
+        'security/ir.model.access.csv',
         'views/account_inherit.xml',
+        'views/account_view_inherited_invoice_tree.xml',
+        'views/medco_bhamni_menu.xml',
+        'views/claim_view.xml',
+        'views/res_partner_view.xml'
+        
     ],
     # only loaded in demonstration mode
     'demo': [

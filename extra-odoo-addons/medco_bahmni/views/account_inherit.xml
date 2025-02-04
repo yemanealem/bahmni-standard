@@ -8,9 +8,21 @@
         <field name="priority">27</field>
         <field name="arch" type="xml">
                 <xpath expr="//button[@name='button_set_checked']" position="after">
-                <button type="object" name="send_payment" string=" Send Payment to Chapa"
-                        attrs="{'invisible': [('move_type', '!=', 'out_invoice')]}"/>
+                
+                <button type="object" name="check_eligibility" string="Check Eligibility"
+                    attrs="{'invisible': [('payment_state', '=', 'paid')]}"/>
+
+                 <button type="object" name="send_payment" string=" Send Payment to Chapa"
+                        attrs="{'invisible': [('move_type', '!=', 'out_invoice')]}"/>   
+
+
             </xpath>
+
+            <!-- <xpath expr="//button[@name='action_view_source_sale_orders']" position="after">
+                <button type="object" name="your_new_method" string="New Custom Button"
+                        class="oe_button oe_stat_button" icon="fa-check"/>
+            </xpath> -->
+
         </field>
     </record>
 </odoo>

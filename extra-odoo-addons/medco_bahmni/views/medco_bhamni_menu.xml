@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    
+    <menuitem id="medco_bhamni_main_menu"
+              name="Medco Bhamni"
+              sequence="10"
+              groups="base.group_user"
+    />
+    
+    <menuitem id="medco_bhamni_claims_menu"
+              name="Claims"
+              parent="medco_bhamni_main_menu"
+              action="action_claims"
+              sequence="1"
+    />
+</odoo>

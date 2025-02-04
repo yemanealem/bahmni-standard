@@ -1,0 +1,13 @@
+<odoo>
+    <record id="invoice_tree_inherit" model="ir.ui.view">
+        <field name="name">account.move.tree.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="priority">16</field>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <field name="eligibility" string="Eligibility"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

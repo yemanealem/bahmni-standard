@@ -1,0 +1,9 @@
+<odoo>
+    <record id="seq_claim_number" model="ir.sequence">
+        <field name="name">Claim Number</field>
+        <field name="padding">5</field>
+        <field name="prefix">CLM/</field>
+        <field name="code">claim.number.sequence</field>
+        <field name="implementation">no_gap</field>
+    </record>
+</odoo>

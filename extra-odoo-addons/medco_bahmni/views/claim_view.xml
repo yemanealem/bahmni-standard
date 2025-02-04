@@ -1,0 +1,52 @@
+<odoo>
+    <data>
+        <!-- Tree View for Account Claim -->
+        <record id="view_claim_tree" model="ir.ui.view">
+            <field name="name">claim.tree</field>
+            <field name="model">account.claim</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="claim_number" string="Claim Number" />
+                    <field name="partner_id" string="Patient Name"/>
+                     <field name="hospital_name" string="Hospital Name"/>
+                     <field name="invoice_id"/>
+                     <field name="amount"/>
+                    <field name="date" string="Claim Date"/>
+                    <field name="cbhi_id"/>
+                    <field name="state" string="Status"/>
+                    <!-- <field name="claim_line_ids" string="products"/> -->
+
+                    <header>
+                    <button name="action_send_claims" type="object" string="Send Claim" class="oe_highlight"/>
+                </header>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action to Open Claims -->
+        <record id="action_claims" model="ir.actions.act_window">
+            <field name="name">Claims</field>
+            <field name="res_model">account.claim</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_claim_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a new Claim.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action for Sending Claims -->
+        <record id="action_claim_send_button" model="ir.actions.server">
+            <field name="name">Send Claims</field>
+            <field name="model_id" ref="model_account_claim"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = model.action_send_claims()
+            </field>
+        </record>
+
+        <!-- Menu Item for Claims -->
+        <menuitem id="menu_claims" name="Claims" action="action_claims"/>
+    </data>
+</odoo>
