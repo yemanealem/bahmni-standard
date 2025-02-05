@@ -102,6 +102,13 @@ class AccountMove(models.Model):
             temp_checkout_urls[self.id] = checkout_url  # Store in dictionary
             _logger.info("Checkout URL updated successfully: %s", checkout_url)
 
+
+
+    def action_custom_button(self,data):
+         _logger.info("Received callback data: %s", data)
+
+                 
+
     def check_eligibility(self):
 
         
@@ -114,7 +121,8 @@ class AccountMove(models.Model):
         'first_name': self.partner_id.name,
         'email': self.partner_id.email or '',
         'phone_number': self.partner_id.phone or '',
-        'hospital_name': self.partner_id.company_id.name if self.partner_id.company_id else '',  
+        'cbhiId':self.partner_id.cbhiId or '',
+        'hospital_name': self.partner_id.company_id.name if self.partner_id.company_id else 'ZEWDITU',  
 
         'products': [{
             'product_id': line.product_id.id,
@@ -129,15 +137,14 @@ class AccountMove(models.Model):
 
 
         # base_url = "http://cbhi.medcoanalytics.com/api/cbhi/insured/check-eligibility"
-        base_url="http://192.168.226.196:8900/api/cbhi/insured/check-eligibility"
+        base_url="http://192.168.210.196:8900/api/cbhi/insured/check-eligibility"
         params = {
-            "Search": self.partner_id.phone or '' ,
+            "Search": self.partner_id.cbhiId or '' ,
             "page": 1,
             "limit": 25
         }
 
 
-    
         try:
             _logger.info("deta sent for eligibility check : %s",params)
 
@@ -169,6 +176,7 @@ class AccountMove(models.Model):
                     'state': 'draft', 
                     'partner_id': cbhi_data.get('cust_id'),
                     'invoice_id': cbhi_data.get('move_id'),
+                    'hospital_name':'ZEWDITU'
                 }
 
                 claim = self.env['account.claim'].create(claim_data)
@@ -198,7 +206,7 @@ class AccountMove(models.Model):
 
                 account_move.write({'eligibility': "Not Eligible"})
 
-                self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {'message': message})
+                self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {'message': message,'duration': 5000})
 
             
         except requests.exceptions.Timeout:

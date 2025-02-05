@@ -8,7 +8,6 @@ import json
 from datetime import date
 from odoo.exceptions import UserError
 
-
 _logger = logging.getLogger(__name__)
 
 class AccountClaim(models.Model):
@@ -23,11 +22,18 @@ class AccountClaim(models.Model):
 
 
     state = fields.Selection([
-        ('draft', 'Draft'),
-        ('processing', 'Processing'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected')
+        ('draft', 'draft'),
+        ('Requested','Requested'),
+        ('Processed', 'Processed'),
+        ('Approved', 'Approved'),
+        ('Checked','Checked'),
+        ('Rejected', 'Rejected'),
+        ('Authorized','Authorized'),
+        ('Settled','Settled'),
+        ('Rejected','Rejected'),
+        ('paid', 'paid'),
     ], string='State', default='draft')
+
     
     partner_id = fields.Many2one('res.partner', string='Patient')  
     
@@ -41,9 +47,9 @@ class AccountClaim(models.Model):
         record = super(AccountClaim, self).create(vals)
         current_year = date.today().year
         sequence = self.env['ir.sequence'].next_by_code('claim.number.sequence')
-        if sequence:
-            sequence_number = sequence.replace('CLM/ZEWDITU', '')
-            record.claim_number = 'CLM/{}/{}'.format(current_year, sequence_number)
+        if sequence.startswith('CLM/'):
+            sequence_number = sequence.replace('CLM/', '', 1)
+            record.claim_number = 'CLM/ZEWDITU/{}/{}'.format(current_year, sequence_number)
 
         
         return record
@@ -59,7 +65,7 @@ class AccountClaim(models.Model):
 
         for claim in claims_data:
             claim_dict = {
-                "cbhiId": "kdhfskdf", 
+                "cbhiId": claim['cbhi_id'], 
                 "providerName": "Zewditu",
                 "claimId":claim['claim_number'],
                 "description":"",
@@ -77,7 +83,7 @@ class AccountClaim(models.Model):
             _logger.info("Sending data to API:\n%s", json.dumps(formatted_data, indent=4))
 
 
-        url = "http://192.168.226.196:8900/api/cbhi/claim"
+        url = "http://192.168.210.196:8900/api/cbhi/claim"
         headers = {'Content-Type': 'application/json'}
 
         try:

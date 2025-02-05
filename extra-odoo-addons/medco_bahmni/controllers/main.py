@@ -8,7 +8,7 @@ import base64
 import json
 import logging
 from odoo.exceptions import UserError
-from werkzeug.utils import redirect  # Import the redirect function
+from werkzeug.utils import redirect  
 _logger = logging.getLogger(__name__)
 
 class PaymentController(http.Controller):
@@ -84,8 +84,6 @@ class PaymentController(http.Controller):
            
  
             # response = requests.post(openFn_api_url, json=data, timeout=100)
-
-
 
 
             return Response(json.dumps({"success": "Payment confirmed"}), status=200)
@@ -201,6 +199,62 @@ class PaymentController(http.Controller):
                  account_move.write({'transaction_no': transaction_no,'checkout_url':checkout_url, 'trans_timestamp': transaction_date})
            
             account_move.send_payment_with_data(data)
+            
+        except Exception as e:
+            _logger.error("Error processing the request: %s", str(e))
+            return Response(
+                json.dumps({"error": str(e)}),
+                status=500
+            )
+
+
+    @http.route('/bahmni/claim-update', type='http', auth='public', methods=['POST'], csrf=False)
+    def handle_update_claim_request(self, **post_data):
+
+        try:
+            data = json.loads(request.httprequest.data.decode('utf-8'))
+            claim_id = data.get('claimUuid')
+            status = data.get('status')
+
+            if not claim_id:
+                return Response(
+                    json.dumps({"error": "Missing Claim Number"}),
+                    status=400
+                )
+            
+
+            update_claim = request.env['account.claim'].sudo().search([('claim_number', '=', claim_id)], limit=1)
+
+            if update_claim:
+                update_claim.write({'state': status})
+                
+                invoice_number = update_claim.invoice_id.name
+                _logger.info("Invoice Number: %s", invoice_number)
+
+                
+                if invoice_number:
+                    if status=='paid':
+                        update_account_move = request.env['account.move'].sudo().search([('name', '=', invoice_number)], limit=1)
+                        update_account_move.write({'payment_state': status})
+
+                        _logger.info("Reversed called: %s", update_account_move)
+
+                    
+                    return Response(
+                            json.dumps({"message": "Updated Successfully"}), 
+                            status=200,  
+                            content_type="application/json"
+                        )
+
+                
+    
+                else:
+                    _logger.warning("Invoice ID not found for claim: %s", claim_id)
+            else:
+                _logger.warning("Claim not found for claim_number: %s", claim_id)
+
+            
+           
             
         except Exception as e:
             _logger.error("Error processing the request: %s", str(e))

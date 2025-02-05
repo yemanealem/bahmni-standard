@@ -13,7 +13,7 @@
                     attrs="{'invisible': [('payment_state', '=', 'paid')]}"/>
 
                  <button type="object" name="send_payment" string=" Send Payment to Chapa"
-                        attrs="{'invisible': [('move_type', '!=', 'out_invoice')]}"/>   
+                        attrs="{'invisible': [('payment_state', '=', 'paid')]}"/>   
 
 
             </xpath>

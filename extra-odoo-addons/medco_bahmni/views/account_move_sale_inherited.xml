@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="invoice_inherit2" model="ir.ui.view">
+        <field name="name">account.move.form.inherit2</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="sale.account_invoice_form"/>
+        <field name="priority">27</field>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//button[@name='action_view_source_sale_orders']" position="after">
+                <button name="action_custom_button"
+                        string="My Custom Button"
+                        type="object"
+                        class="oe_highlight"
+                        icon="fa-plus"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
