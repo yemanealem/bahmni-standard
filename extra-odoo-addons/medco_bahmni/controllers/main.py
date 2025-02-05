@@ -7,6 +7,7 @@ import hashlib
 import base64
 import json
 import logging
+import requests
 from odoo.exceptions import UserError
 from werkzeug.utils import redirect  
 _logger = logging.getLogger(__name__)
@@ -59,121 +60,141 @@ class PaymentController(http.Controller):
             return False
         
 
-    def _handle_successful_payment(self, data):
-        _logger.info("✅ Payment Successful: %s", data)
 
+ 
+            # response = requests.post(openFn_api_url, json=data, timeout=100)
+
+
+    def send_data_to_openFn(self, payload):
+
+
+        
         try:
             data = json.loads(request.httprequest.data.decode('utf-8'))
-            transaction_no = data.get('tx_ref')
+            transaction_no = data.get('reference')
             _logger.info("✅ transaction number: %s", transaction_no)
 
 
             if not transaction_no:
                 return Response(json.dumps({"error": "Missing required fields"}), status=400)
 
-            account_move_update = request.env['account.move'].sudo().search([('transaction_no', '=', transaction_no)])
-            if not account_move_update.exists():
-                return Response(json.dumps({"error": "Account move not found"}), status=404)
+            try:
+                account_move_update = request.env['account.move'].sudo().search([('transaction_no', '=', transaction_no)])
+                
+                if not account_move_update.exists():
+                    _logger.info("Record does not exist for transaction_no: %s", transaction_no)
+                else:
+                    account_move_update[0].sudo().write({
+                        'transaction_no': transaction_no,
+                        'payment_state': 'paid'
+                    })
+                    _logger.info("Successfully updated account.move with transaction_no: %s", transaction_no)
 
-            account_move_update[0].sudo().write({
-                'transaction_no': transaction_no,
-                'payment_state': 'paid'
-            })
+            except IndexError:
+                _logger.error("Index error: Attempted to access an empty recordset for transaction_no: %s", transaction_no)
 
+            except Exception as e:
+                _logger.error("An error occurred while updating account.move: %s", str(e), exc_info=True)
 
-           
- 
-            # response = requests.post(openFn_api_url, json=data, timeout=100)
+          
+            openFn_api_url="http://192.168.210.131:4000/i/90360758-618c-4c77-8efd-e52d867ef5da"
+    
+            response = requests.post(openFn_api_url, json=payload, timeout=100)
+            try:
+                response = requests.post(openFn_api_url, json=payload, timeout=100)
+                _logger.info("✅ transaction number: %s", response)
 
+            except requests.Timeout:
+                _logger.info("Error: The request timed out.")
 
-            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+            except requests.ConnectionError:
+                _logger.info("Error: Failed to connect to the server.")
+
+            except requests.HTTPError as http_err:
+                _logger.info("Error: Failed to connect to the server:  %s",http_err)
+
+            except requests.RequestException as req_err:
+                print(f"An error occurred: {req_err}")
+                _logger.info("Error: Failed to connect to the server:  %s",req_err)
+
 
         except Exception as e:
-            _logger.error("Error processing request: %s", str(e))
-            return Response(json.dumps({"error": str(e)}), status=500)
+            _logger.error("Error processing the request: %s", str(e))
+            return Response(
+                json.dumps({"error": str(e)}),
+                status=500
+            )
 
-
-
-    def _handle_failed_payment(self, payload):
-        
-         return Response(json.dumps({"success": "Payment confirmed"}), status=200)
-
-
-    def _handle_refunded_payment(self, payload):
-        
-        return Response(json.dumps({"success": "Payment confirmed"}), status=200)
-
-
-    def _handle_reversed_payment(self, payload):
-
-        _logger.info("Reversed callled: %s", payload)
-
-        
-        return Response(json.dumps({"success": "Payment confirmed"}), status=200)
-
-
-    def _handle_successful_payout(self, payload):
-
-        return Response(json.dumps({"success": "Payment confirmed"}), status=200)
-
-
-    def _handle_failed_payout(self, payload):
-
-        return Response(json.dumps({"success": "Payment confirmed"}), status=200)
-
-    
 
     @http.route('/confirm-payment/post', type='json', auth='none', methods=['POST'], csrf=False)
     def handle_post_request(self, **post_data):
-        # api_key = request.httprequest.headers.get('Authorization')
         
-        # api_key = api_key.split("Bearer ")[1] 
-        # _logger.info("the token is : %s", api_key)
-
-        # auth_api = self.auth_api_key(api_key)
-
-        # if auth_api != True:
-        #     return auth_api
-
-        # user = request.env['res.users'].sudo().search([('api_key_ids', '=', api_key)])
-        # if not user:
-        #     return Response(json.dumps({"error": "Invalid API key"}), status=403)
-
-        # request.uid = user.id  
-        # _logger.info(f"Authenticated user: {user.name} (ID: {user.id})")
-
 
         chapa_signature = request.httprequest.headers.get('x-chapa-signature')
 
+        _logger.info("CHapa Signiture: %s", chapa_signature)
+
+
         data = json.loads(request.httprequest.data.decode('utf-8'))
 
-
-        if not chapa_signature or not self._verify_signature(data, chapa_signature):
-            return {'status': 'error', 'message': 'Invalid signature'}, 401
+        # if not chapa_signature or not self._verify_signature(data, chapa_signature):
+        #     return {'status': 'error', 'message': 'Invalid signature'}, 401
         
 
         event_type = data.get('event')
         _logger.info("Event data: %s", event_type)
 
+        # message = f"✅ Payment Suceesfully"
+        # self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {'message': message})
 
         if event_type == "charge.success":
             
             _logger.info("Entered to Suceess: %s", event_type)
 
-            self._handle_successful_payment(data)
+            self.send_data_to_openFn(data)
+            _logger.info("Returned after OPenFN")
+
+
+            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+
         elif event_type == "charge.failed":
-            self._handle_failed_payment(data)
+
+            self.send_data_to_openFn(data)
+            _logger.info("Entered to failed: %s", event_type)
+            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+
         elif event_type == "charge.refunded":
-            self._handle_refunded_payment(data)
+            _logger.info("Entered to refend: %s", event_type)
+            self.send_data_to_openFn(data)
+            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+
+
         elif event_type == "charge.reversed":
            
-            _logger.info("Entered to Suceess: %s", event_type)
+            _logger.info("Entered to reversed: %s", event_type)
 
-            self._handle_reversed_payment(data)
+            self.send_data_to_openFn(data)
+            _logger.info("Entered to  after openFn: %s", event_type)
+
+            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+
+
         elif event_type == "payout.success":
-            self._handle_successful_payout(data)
+
+            self.send_data_to_openFn(data)
+            _logger.info("Entered to  after openFn: %s", event_type)
+
+            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+
+
         elif event_type == "payout.failed":
-            self._handle_failed_payout(data)
+            self.send_data_to_openFn(data)
+            _logger.info("Entered to  after openFn: %s", event_type)
+
+            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+
+
+            
         else:
             return {'status': 'error', 'message': f'Unknown event type: {event_type}'}, 400
 

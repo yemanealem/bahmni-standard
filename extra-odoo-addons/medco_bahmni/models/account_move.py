@@ -26,20 +26,20 @@ class AccountMove(models.Model):
         products = [line.product_id.name for line in self.invoice_line_ids]
         _logger.info("Invoice Data: %s",products)
 
-        odo_api_url = "http://192.168.226.77:8069"
+        odo_api_url = "http://192.168.210.78:8069"
         callback_checkout_url = f"{odo_api_url}/checkout-payment/post"
         payment_verification_url = f"{odo_api_url}/confirm-payment/post"
 
-        openFn_api_url = "http://192.168.226.131:4000/i/64f19725-e4cd-46d7-8399-037b467ce164"
+        openFn_api_url = "http://192.168.210.131:4000/i/64f19725-e4cd-46d7-8399-037b467ce164"
         merchant_id='12738'
         return_url='http://localhost:8069/web#action=244&model=account.move&view_type=list&cids=1&menu_id=121'
-        api_key='CHASECK-EKqvJrN99dictFBV8MaL9OIUymw9nozc'
+        api_key='CHASECK-4AstboTKyoYh3N5bsCAoA04Q4TpaQCyi'
 
         transaction_no = f"{self.id}-{uuid.uuid4().hex[:8]}"  
         payinfo = {
             'move_id': self.id,
             'move_name': self.name,
-            'amount': 3,
+            'amount': 1,
             'date': self.invoice_date.strftime('%Y-%m-%d') if self.invoice_date else None,  
             'cust_id': self.partner_id.id,
             'first_name': self.partner_id.name.split()[0],
