@@ -96,8 +96,8 @@ class AccountClaim(models.Model):
                 for claim in claims_data:
                     claim_record = self.env['account.claim'].browse(claim['id'])
                     
-                    if claim_record.exists():
-                        claim_record.write({'state': 'processing'})
+                    # if claim_record.exists():
+                    #     claim_record.write({'state': 'processing'})
 
                 message = "✅ CLaim Sent Successfully for Proceess"
                 self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {'message': message})

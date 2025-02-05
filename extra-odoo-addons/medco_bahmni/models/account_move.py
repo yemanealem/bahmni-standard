@@ -35,7 +35,8 @@ class AccountMove(models.Model):
         return_url='http://localhost:8069/web#action=244&model=account.move&view_type=list&cids=1&menu_id=121'
         api_key='CHASECK-4AstboTKyoYh3N5bsCAoA04Q4TpaQCyi'
 
-        transaction_no = f"{self.id}-{uuid.uuid4().hex[:8]}"  
+        # transaction_no = f"{self.id}-{uuid.uuid4().hex[:8]}"  
+        transaction_no = self.transaction_no if self.transaction_no else f"{self.id}-{uuid.uuid4().hex[:8]}"
         payinfo = {
             'move_id': self.id,
             'move_name': self.name,
@@ -112,6 +113,8 @@ class AccountMove(models.Model):
     def check_eligibility(self):
 
         
+        _logger.info("ref number: %s", self.transaction_no)
+
         cbhi_data = {
         'move_id': self.id,
         'move_name': self.name,

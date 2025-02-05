@@ -71,7 +71,7 @@ class PaymentController(http.Controller):
         
         try:
             data = json.loads(request.httprequest.data.decode('utf-8'))
-            transaction_no = data.get('reference')
+            transaction_no = payload['reference']
             _logger.info("✅ transaction number: %s", transaction_no)
 
 
@@ -79,15 +79,15 @@ class PaymentController(http.Controller):
                 return Response(json.dumps({"error": "Missing required fields"}), status=400)
 
             try:
-                account_move_update = request.env['account.move'].sudo().search([('transaction_no', '=', transaction_no)])
+                account_move_update = request.env['account.move'].sudo().search([('transaction_no', '=', transaction_no)],limit=1)
+                invoice_num=account_move_update.name
+                update_account_move = request.env['account.move'].sudo().search([('name', '=', invoice_num)], limit=1)
                 
                 if not account_move_update.exists():
                     _logger.info("Record does not exist for transaction_no: %s", transaction_no)
                 else:
-                    account_move_update[0].sudo().write({
-                        'transaction_no': transaction_no,
-                        'payment_state': 'paid'
-                    })
+                    update_account_move.write({'payment_state': 'paid'})
+
                     _logger.info("Successfully updated account.move with transaction_no: %s", transaction_no)
 
             except IndexError:
@@ -97,25 +97,25 @@ class PaymentController(http.Controller):
                 _logger.error("An error occurred while updating account.move: %s", str(e), exc_info=True)
 
           
-            openFn_api_url="http://192.168.210.131:4000/i/90360758-618c-4c77-8efd-e52d867ef5da"
+            # openFn_api_url="http://192.168.210.131:4000/i/90360758-618c-4c77-8efd-e52d867ef5da"
     
-            response = requests.post(openFn_api_url, json=payload, timeout=100)
-            try:
-                response = requests.post(openFn_api_url, json=payload, timeout=100)
-                _logger.info("✅ transaction number: %s", response)
+            # response = requests.post(openFn_api_url, json=payload, timeout=100)
+            # try:
+            #     response = requests.post(openFn_api_url, json=payload, timeout=100)
+            #     _logger.info("✅ transaction number: %s", response)
 
-            except requests.Timeout:
-                _logger.info("Error: The request timed out.")
+            # except requests.Timeout:
+            #     _logger.info("Error: The request timed out.")
 
-            except requests.ConnectionError:
-                _logger.info("Error: Failed to connect to the server.")
+            # except requests.ConnectionError:
+            #     _logger.info("Error: Failed to connect to the server.")
 
-            except requests.HTTPError as http_err:
-                _logger.info("Error: Failed to connect to the server:  %s",http_err)
+            # except requests.HTTPError as http_err:
+            #     _logger.info("Error: Failed to connect to the server:  %s",http_err)
 
-            except requests.RequestException as req_err:
-                print(f"An error occurred: {req_err}")
-                _logger.info("Error: Failed to connect to the server:  %s",req_err)
+            # except requests.RequestException as req_err:
+            #     print(f"An error occurred: {req_err}")
+            #     _logger.info("Error: Failed to connect to the server:  %s",req_err)
 
 
         except Exception as e:
@@ -126,8 +126,8 @@ class PaymentController(http.Controller):
             )
 
 
-    @http.route('/confirm-payment/post', type='json', auth='none', methods=['POST'], csrf=False)
-    def handle_post_request(self, **post_data):
+    @http.route('/confirm-payment/post', type='http', auth='public', methods=['POST'], csrf=False)
+    def handle_confirm_payment_request(self, **post_data):
         
 
         chapa_signature = request.httprequest.headers.get('x-chapa-signature')
