@@ -83,7 +83,7 @@ class AccountClaim(models.Model):
             _logger.info("Sending data to API:\n%s", json.dumps(formatted_data, indent=4))
 
 
-        url = "http://192.168.210.196:8900/api/cbhi/claim"
+        url = "http://192.168.0.108:8900/api/cbhi/claim"
         headers = {'Content-Type': 'application/json'}
 
         try:

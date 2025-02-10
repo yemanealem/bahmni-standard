@@ -26,11 +26,11 @@ class AccountMove(models.Model):
         products = [line.product_id.name for line in self.invoice_line_ids]
         _logger.info("Invoice Data: %s",products)
 
-        odo_api_url = "http://192.168.210.78:8069"
+        odo_api_url = "http://192.168.0.105:8069"
         callback_checkout_url = f"{odo_api_url}/checkout-payment/post"
         payment_verification_url = f"{odo_api_url}/confirm-payment/post"
 
-        openFn_api_url = "http://192.168.210.131:4000/i/64f19725-e4cd-46d7-8399-037b467ce164"
+        openFn_api_url = "http://192.168.0.103:4000/i/64f19725-e4cd-46d7-8399-037b467ce164"
         merchant_id='12738'
         return_url='http://localhost:8069/web#action=244&model=account.move&view_type=list&cids=1&menu_id=121'
         api_key='CHASECK-4AstboTKyoYh3N5bsCAoA04Q4TpaQCyi'
@@ -139,8 +139,8 @@ class AccountMove(models.Model):
         # _logger.info("Received data from the elegibility: %s",  cbhi_data)
 
 
-        # base_url = "http://cbhi.medcoanalytics.com/api/cbhi/insured/check-eligibility"
-        base_url="http://192.168.210.196:8900/api/cbhi/insured/check-eligibility"
+        base_url_openFn= "http://192.168.0.103:4000/i/343b6035-9e72-41a9-8ab0-79033165de1d"
+        base_url="http://192.168.0.108:8900/api/cbhi/insured/check-eligibility"
         params = {
             "Search": self.partner_id.cbhiId or '' ,
             "page": 1,
@@ -198,7 +198,9 @@ class AccountMove(models.Model):
     
 
                 if claim_line_vals:
-                    claim.sudo().write({'claim_line_ids': claim_line_vals})       
+                    claim.sudo().write({'claim_line_ids': claim_line_vals}) 
+                response = requests.post(base_url_openFn, params=params, timeout=100)
+          
 
 
             else:

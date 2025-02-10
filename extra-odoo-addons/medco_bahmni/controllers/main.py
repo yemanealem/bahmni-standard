@@ -71,7 +71,10 @@ class PaymentController(http.Controller):
         
         try:
             data = json.loads(request.httprequest.data.decode('utf-8'))
-            transaction_no = payload['reference']
+            
+            _logger.info("✅ payload: %s", payload)
+
+            transaction_no = payload['tx_ref']
             _logger.info("✅ transaction number: %s", transaction_no)
 
 
@@ -79,6 +82,11 @@ class PaymentController(http.Controller):
                 return Response(json.dumps({"error": "Missing required fields"}), status=400)
 
             try:
+                # account_moves = request.env['account.move'].sudo().search([])
+                # if account_moves:
+                #     account_moves.write({'payment_status': 'paid'})  
+
+        
                 account_move_update = request.env['account.move'].sudo().search([('transaction_no', '=', transaction_no)],limit=1)
                 invoice_num=account_move_update.name
                 update_account_move = request.env['account.move'].sudo().search([('name', '=', invoice_num)], limit=1)
@@ -153,6 +161,9 @@ class PaymentController(http.Controller):
 
             self.send_data_to_openFn(data)
             _logger.info("Returned after OPenFN")
+
+            # message = "✅ CLaim Sent Successfully for Proceess"
+            # self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {'message': message})
 
 
             return Response(json.dumps({"success": "Payment confirmed"}), status=200)
