@@ -28,6 +28,8 @@
         'views/medco_bhamni_menu.xml',
         'views/claim_view.xml',
         'views/res_partner_view.xml'
+        # 'views/account_invoice_inherit_form.xml'
+        # 'views/account_move_form_inherit.xml'
         # 'views/account_move_sale_inherited.xml'
         
     ],

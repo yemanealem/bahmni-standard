@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <odoo>
     <record id="invoice_inherit" model="ir.ui.view">
         <field name="name">account.move.form.inherit</field>
@@ -12,16 +11,18 @@
                 <button type="object" name="check_eligibility" string="Check Eligibility"
                     attrs="{'invisible': [('payment_state', '=', 'paid')]}"/>
 
-                 <button type="object" name="send_payment" string=" Send Payment to Chapa"
-                        attrs="{'invisible': [('payment_state', '=', 'paid')]}"/>   
+           <button type="object" name="send_payment" string="Send Payment to Chapa"
+    attrs="{'invisible': ['|', ('payment_state', '=', 'paid'), ('eligibility', '=', 'Eligible')]}"/>
 
 
             </xpath>
 
-            <!-- <xpath expr="//button[@name='action_view_source_sale_orders']" position="after">
-                <button type="object" name="your_new_method" string="New Custom Button"
-                        class="oe_button oe_stat_button" icon="fa-check"/>
-            </xpath> -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="cbhimember_id" string="The Patient Is CBHI Member with  CBHI_ID" readonly="1" 
+                    attrs="{'invisible': [('eligibility', '!=', 'Eligible')]}"/>
+
+                    <field name="eligibility" readonly="1"/>        
+            </xpath>
 
         </field>
     </record>

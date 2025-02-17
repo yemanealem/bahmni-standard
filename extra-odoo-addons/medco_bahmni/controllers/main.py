@@ -104,26 +104,28 @@ class PaymentController(http.Controller):
                 _logger.error("An error occurred while updating account.move: %s", str(e), exc_info=True)
 
           
-            openFn_api_url="http://192.168.100.82:4000/i/90360758-618c-4c77-8efd-e52d867ef5da"
+            # openFn_api_url="http://192.168.100.82:4000/i/90360758-618c-4c77-8efd-e52d867ef5da"
     
-            response = requests.post(openFn_api_url, json=payload, timeout=100)
-            try:
-                response = requests.post(openFn_api_url, json=payload, timeout=100)
-                _logger.info("✅ transaction number: %s", response)
+            # response = requests.post(openFn_api_url, json=payload, timeout=100)
+            # try:
+            #     response = requests.post(openFn_api_url, json=payload, timeout=100)
+            #     _logger.info("✅ transaction number: %s", response)
 
-            except requests.Timeout:
-                _logger.info("Error: The request timed out.")
+            # except requests.Timeout:
+            #     _logger.info("Error: The request timed out.")
 
-            except requests.ConnectionError:
-                _logger.info("Error: Failed to connect to the server.")
+            # except requests.ConnectionError:
+            #     _logger.info("Error: Failed to connect to the server.")
 
-            except requests.HTTPError as http_err:
-                _logger.info("Error: Failed to connect to the server:  %s",http_err)
+            # except requests.HTTPError as http_err:
+            #     _logger.info("Error: Failed to connect to the server:  %s",http_err)
 
-            except requests.RequestException as req_err:
-                print(f"An error occurred: {req_err}")
-                _logger.info("Error: Failed to connect to the server:  %s",req_err)
+            # except requests.RequestException as req_err:
+            #     print(f"An error occurred: {req_err}")
+            #     _logger.info("Error: Failed to connect to the server:  %s",req_err)
 
+
+        #  Sending data to open Fn
 
         except Exception as e:
             _logger.error("Error processing the request: %s", str(e))
@@ -158,7 +160,6 @@ class PaymentController(http.Controller):
             
             _logger.info("Entered to Suceess: %s", event_type)
 
-            self.send_data_to_openFn(data)
             _logger.info("Returned after OPenFN")
 
             # message = "✅ CLaim Sent Successfully for Proceess"
@@ -167,7 +168,7 @@ class PaymentController(http.Controller):
 
             return Response(json.dumps({"success": "Payment confirmed"}), status=200)
 
-        elif event_type == "charge.failed":
+        elif event_type == "charge.failed/cancelled":
 
             self.send_data_to_openFn(data)
             _logger.info("Entered to failed: %s", event_type)
