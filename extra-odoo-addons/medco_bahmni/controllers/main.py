@@ -67,7 +67,6 @@ class PaymentController(http.Controller):
 
     def send_data_to_openFn(self, payload):
 
-
         
         try:
             data = json.loads(request.httprequest.data.decode('utf-8'))
@@ -105,25 +104,25 @@ class PaymentController(http.Controller):
                 _logger.error("An error occurred while updating account.move: %s", str(e), exc_info=True)
 
           
-            # openFn_api_url="http://192.168.210.131:4000/i/90360758-618c-4c77-8efd-e52d867ef5da"
+            openFn_api_url="http://192.168.100.82:4000/i/90360758-618c-4c77-8efd-e52d867ef5da"
     
-            # response = requests.post(openFn_api_url, json=payload, timeout=100)
-            # try:
-            #     response = requests.post(openFn_api_url, json=payload, timeout=100)
-            #     _logger.info("✅ transaction number: %s", response)
+            response = requests.post(openFn_api_url, json=payload, timeout=100)
+            try:
+                response = requests.post(openFn_api_url, json=payload, timeout=100)
+                _logger.info("✅ transaction number: %s", response)
 
-            # except requests.Timeout:
-            #     _logger.info("Error: The request timed out.")
+            except requests.Timeout:
+                _logger.info("Error: The request timed out.")
 
-            # except requests.ConnectionError:
-            #     _logger.info("Error: Failed to connect to the server.")
+            except requests.ConnectionError:
+                _logger.info("Error: Failed to connect to the server.")
 
-            # except requests.HTTPError as http_err:
-            #     _logger.info("Error: Failed to connect to the server:  %s",http_err)
+            except requests.HTTPError as http_err:
+                _logger.info("Error: Failed to connect to the server:  %s",http_err)
 
-            # except requests.RequestException as req_err:
-            #     print(f"An error occurred: {req_err}")
-            #     _logger.info("Error: Failed to connect to the server:  %s",req_err)
+            except requests.RequestException as req_err:
+                print(f"An error occurred: {req_err}")
+                _logger.info("Error: Failed to connect to the server:  %s",req_err)
 
 
         except Exception as e:
@@ -227,8 +226,8 @@ class PaymentController(http.Controller):
                     status=400
                 )
             account_move = request.env['account.move'].sudo().search([('id', '=', id)], limit=1)
-            if account_move:
-                 account_move.write({'transaction_no': transaction_no,'checkout_url':checkout_url, 'trans_timestamp': transaction_date})
+            # if account_move:
+            #      account_move.write({'transaction_no': transaction_no,'checkout_url':checkout_url, 'trans_timestamp': transaction_date})
            
             account_move.send_payment_with_data(data)
             
