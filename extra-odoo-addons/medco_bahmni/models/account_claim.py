@@ -82,8 +82,8 @@ class AccountClaim(models.Model):
             formatted_data.append(claim_dict)
             _logger.info("Sending data to API:\n%s", json.dumps(formatted_data, indent=4))
 
-
-        url = "http://192.168.220.196:8900/api/cbhi/claim"
+        # https://cbhi.medcoanalytics.com
+        url = "https://cbhi.medcoanalytics.com/api/cbhi/claim"
         headers = {'Content-Type': 'application/json'}
 
         try:

@@ -8,10 +8,9 @@ import time
 _logger = logging.getLogger(__name__)
 
 temp_checkout_urls = {}
-base_url="http://192.168.220.196:8900/api/cbhi/insured/check-eligibility"
+base_url="http://192.168.210.196:8900/api/cbhi/insured/check-eligibility"
 CHAPA_API_BASE_URL = 'https://api.chapa.co/v1/transaction/initialize'
 odo_api_url = "http://192.168.100.34:8069"
-
 
 
 
@@ -204,15 +203,15 @@ class AccountMove(models.Model):
 
         base_url_openFn= "http://192.168.100.82:4000/i/0e381936-01e9-4444-8cdb-0a0b7cf74c8d"
 
-        # 3 base_url="http://192.168.220.196:8900/api/cbhi/insured/check-eligibility"
+        base_url="http://192.168.210.196:8900/api/cbhi/insured/check-eligibility"
         # base_url="https://cbhi.medcoanalytics.com/api/cbhi/insured/check-eligibility"
-       
+        # base_url = "https://cbhi.medcoanalytics.com/api/cbhi/{}/insured/check-eligibility".format(self.partner_id.cbhiId or '')
+        base_url = f"https://cbhi.medcoanalytics.com/api/cbhi/insured/check-eligibility/{self.partner_id.cbhiId or ''}"
         params = {
             "Search": self.partner_id.cbhiId or '' ,
             "page": 1,
             "limit": 25
         }
-
 
 
         # try:
@@ -233,7 +232,9 @@ class AccountMove(models.Model):
         try:
             _logger.info("dta sent for eligibility check : %s",params)
 
-            response = requests.get(base_url, params=params, timeout=100)
+            # response = requests.get(base_url, params=params, timeout=100)
+            response = requests.get(base_url, timeout=100)
+
             response_data = response.json()  
             _logger.info("response data from CBHI: %s", response_data)
 
@@ -246,8 +247,8 @@ class AccountMove(models.Model):
 
                 self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {'message': message,'duration': 30000})
 
-                # res_partner = self.env['res.partner'].sudo().search([('phone', '=',self.partner_id.phone)], limit=1)
-                # res_partner.write({'cbhiId': cbhi_id})
+                res_partner = self.env['res.partner'].sudo().search([('phone', '=',self.partner_id.phone)], limit=1)
+                res_partner.write({'cbhiId': cbhi_id})
 
                 account_move = self.env['account.move'].sudo().search([('id', '=',self.id )], limit=1)
 

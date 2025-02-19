@@ -59,10 +59,8 @@ class PaymentController(http.Controller):
             _logger.error("Signature verification failed: %s", e)
             return False
         
-
-
  
-            # response = requests.post(openFn_api_url, json=data, timeout=100)
+      # response = requests.post(openFn_api_url, json=data, timeout=100)
 
 
     def send_data_to_openFn(self, payload):
@@ -72,10 +70,8 @@ class PaymentController(http.Controller):
             data = json.loads(request.httprequest.data.decode('utf-8'))
             
             _logger.info("✅ payload: %s", payload)
-
             transaction_no = payload['tx_ref']
             _logger.info("✅ transaction number: %s", transaction_no)
-
 
             if not transaction_no:
                 return Response(json.dumps({"error": "Missing required fields"}), status=400)
@@ -159,6 +155,8 @@ class PaymentController(http.Controller):
         if event_type == "charge.success":
             
             _logger.info("Entered to Suceess: %s", event_type)
+            self.send_data_to_openFn(data)
+
 
             _logger.info("Returned after OPenFN")
 
@@ -170,24 +168,24 @@ class PaymentController(http.Controller):
 
         elif event_type == "charge.failed/cancelled":
 
-            self.send_data_to_openFn(data)
+            # self.send_data_to_openFn(data)
             _logger.info("Entered to failed: %s", event_type)
-            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+            return Response(json.dumps({"success": "Payment failed/cancelled"}), status=200)
 
         elif event_type == "charge.refunded":
             _logger.info("Entered to refend: %s", event_type)
-            self.send_data_to_openFn(data)
-            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+            # self.send_data_to_openFn(data)
+            return Response(json.dumps({"success": "Payment refunded"}), status=200)
 
 
         elif event_type == "charge.reversed":
            
             _logger.info("Entered to reversed: %s", event_type)
 
-            self.send_data_to_openFn(data)
+            # self.send_data_to_openFn(data)
             _logger.info("Entered to  after openFn: %s", event_type)
 
-            return Response(json.dumps({"success": "Payment confirmed"}), status=200)
+            return Response(json.dumps({"success": "Payment reversed"}), status=200)
 
 
         elif event_type == "payout.success":
@@ -203,7 +201,6 @@ class PaymentController(http.Controller):
             _logger.info("Entered to  after openFn: %s", event_type)
 
             return Response(json.dumps({"success": "Payment confirmed"}), status=200)
-
 
             
         else:
